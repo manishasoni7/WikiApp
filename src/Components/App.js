@@ -4,12 +4,12 @@ import axios from 'axios'
 class App extends React.Component{
     constructor(props){
         super();
-        this.state = {search : '', results : null};
+        this.state = {search : '', results : []};
     }
 
-    componentDidUpdate(){
-        const search = async () => {
-            const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
+    handleSubmit = async (e) => {
+        e.preventDefault();
+        const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
                 params: {
                     action: 'query',
                     list: 'search',
@@ -18,17 +18,13 @@ class App extends React.Component{
                     srsearch: this.state.search
                 }
             })
-            this.setState({results : data.query.search});
-        }
-        if(this.state.search && !this.state.results){
-            search();
-        }
+            this.setState({results: data.query.search});
     }
 
     render(){
         return(
             <div>
-                <form className="row g-2">
+                <form className="row g-2" onSubmit={this.handleSubmit}>
                     <div className="col-auto">
                         <input 
                         type="Search" 
@@ -41,20 +37,19 @@ class App extends React.Component{
                     <div className="col-auto">
                         <button type="submit" className="btn btn-primary mb-3" >Search</button>
                     </div>
-                    {console.log(this.state.results)}
-                    {this.state.results.map((item) =>{
+                </form>
+                {this.state.results.map((item) =>{
                     return(
-                            <div class="card" style="width: 18rem;">
-                            <div class="card-body">
-                                <h5 class="card-title">{item.title}</h5>
-                                <p class="card-text">{item.snippet}</p>
-                                <a href="#" class="btn btn-primary">Go somewhere</a>
+                            <div key={item.pageid} className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">{item.title}</h5>
+                                <p className="card-text"><span dangerouslySetInnerHTML={{ __html: item.snippet }}></span></p>
+                                <a href={`https://en.wikipedia.org?curid=${item.pageid}`} target="_blank" className="btn btn-success">View more!</a>
                             </div>
                             </div>
                             )
                         })
                     }
-                </form>
             </div>
         )
     }
